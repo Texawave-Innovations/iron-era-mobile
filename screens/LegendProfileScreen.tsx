@@ -167,7 +167,6 @@ export default function LegendProfileScreen() {
 
         <View style={styles.tabsRow}>
           <Text style={[styles.tab, styles.tabActive]}>BIO</Text>
-          <Text style={styles.tab}>PHILOSOPHY</Text>
           <View style={styles.tabLocked}>
             <Text style={styles.tab}>METHODS</Text>
             <MaterialIcons name="lock" size={12} color={colors.primary} />

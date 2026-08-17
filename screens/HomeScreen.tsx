@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,6 +7,7 @@ import IronHeader from '../components/IronHeader';
 import ScrollFloat from '../components/ScrollFloat';
 import { colors, typography, spacing, radius } from '../theme';
 import { PPL_SPLIT } from '../data/pplSplit';
+import { getTodaysLesson } from '../data/ironLessons';
 
 // JS getDay(): 0=Sun..6=Sat. PPL split runs Mon=Day1 ... Sun=Day7(rest).
 function getTodaysSplitDay() {
@@ -53,18 +54,24 @@ const LEGENDS = [
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const todaysDay = getTodaysSplitDay();
+  const todaysLesson = getTodaysLesson();
 
   return (
     <View style={styles.screen}>
       <IronHeader />
       <ScrollView contentContainerStyle={styles.content}>
-        <ImageBackground
-          source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuByjgOvS3gdj4ajnxc6zyOL8nlnY15XK_rk0D8EaPXDvB6r-kUPkCEsWG_XxgqSNga3p7PheG6-XtOTj-Qcyt3CbSW7j0e1VbcmGxrbIxHdFYu5GLywrvMbVIsbDi2o0ECw6zOJ3m_PhkgHmVvJ1-XuGkxNXpXWhdb7bgW2uoNZ9ChavffZ065ieEALo-XwMViObGTQi9R3g0IrFa8QINHLUF3ddnz_WfM7iH_zpDil1umvpHc_s4Ae' }}
-          style={styles.hero}
-          imageStyle={{ resizeMode: 'cover' }}
-          resizeMode="cover"
-        >
-          <LinearGradient colors={['transparent', 'rgba(19,19,19,0.9)', colors.surface]} style={StyleSheet.absoluteFill} />
+        <View style={styles.hero}>
+          <Image
+            source={require('../assets/hero-page.jpg')}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            contentPosition="center"
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(19,19,19,0.25)', 'rgba(19,19,19,0.85)', colors.surface]}
+            locations={[0, 0.45, 0.75, 1]}
+            style={StyleSheet.absoluteFill}
+          />
           <View style={styles.heroContent}>
             <ScrollFloat textStyle={styles.heroTitle} duration={1400} distance={22} stagger={0.04}>
               {"TRAIN HARD.\nBUILD LEGACY."}
@@ -92,7 +99,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        </ImageBackground>
+        </View>
 
         <View style={[styles.section, { marginTop: spacing.stackSm }]}>
           <View style={styles.sectionHeaderRow}>
@@ -128,12 +135,9 @@ export default function HomeScreen() {
         <View style={[styles.section, { paddingHorizontal: spacing.marginMobile }]}>
           <Text style={styles.sectionTitle}>TODAY'S IRON LESSON</Text>
           <View style={styles.lessonCard}>
-            <View style={styles.badge}><Text style={styles.badgeText}>Technique</Text></View>
-            <Text style={[styles.featuredTitle, { marginTop: spacing.stackSm }]}>The Drop Set</Text>
-            <Text style={styles.lessonBody}>
-              Perform an exercise to muscular failure, then immediately reduce the weight by 20-30% and continue to
-              failure again. A brutal mechanism for forcing hypertrophy by recruiting dormant muscle fibers.
-            </Text>
+            <View style={styles.badge}><Text style={styles.badgeText}>{todaysLesson.tag}</Text></View>
+            <Text style={[styles.featuredTitle, { marginTop: spacing.stackSm }]}>{todaysLesson.title}</Text>
+            <Text style={styles.lessonBody}>{todaysLesson.body}</Text>
           </View>
         </View>
 
@@ -168,9 +172,9 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.surfaceContainerLowest },
   content: { paddingBottom: spacing.stackLg },
-  hero: { width: '100%', height: 460, justifyContent: 'flex-end' },
+  hero: { width: '100%', height: 520, justifyContent: 'flex-end', overflow: 'hidden' },
   heroContent: { padding: spacing.marginMobile, gap: spacing.stackSm },
-  heroTitle: { ...typography.displayXl, fontSize: 48, lineHeight: 54, color: colors.onSurface, textTransform: 'uppercase' },
+  heroTitle: { ...typography.displayXl, fontSize: 34, lineHeight: 38, color: colors.primary, textTransform: 'uppercase' },
   featuredCard: {
     marginTop: spacing.stackSm,
     backgroundColor: colors.surfaceContainerHigh,

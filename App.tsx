@@ -16,6 +16,7 @@ import RootNavigator from './navigation/RootNavigator';
 import LaunchScreen from './components/LaunchScreen';
 import { colors } from './theme';
 import { useAnonymousAuth } from './hooks/useAnonymousAuth';
+import { WeightUnitProvider } from './hooks/useWeightUnitPreference';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,10 +35,12 @@ const navTheme = {
 function AppContent() {
   return (
     <SafeAreaProvider>
-      <NavigationContainer theme={navTheme}>
-        <RootNavigator />
-        <StatusBar style="light" />
-      </NavigationContainer>
+      <WeightUnitProvider>
+        <NavigationContainer theme={navTheme}>
+          <RootNavigator />
+          <StatusBar style="light" />
+        </NavigationContainer>
+      </WeightUnitProvider>
     </SafeAreaProvider>
   );
 }

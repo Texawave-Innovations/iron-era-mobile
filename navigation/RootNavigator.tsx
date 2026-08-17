@@ -14,8 +14,8 @@ import PlatzSplitScreen from '../screens/PlatzSplitScreen';
 import LevroneSplitScreen from '../screens/LevroneSplitScreen';
 import CircuitSplitScreen from '../screens/CircuitSplitScreen';
 import WorkoutExecutionScreen from '../screens/WorkoutExecutionScreen';
-import PlaceholderScreen from '../screens/PlaceholderScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 import ProgressScreen from '../screens/ProgressScreen';
 
 const Tab = createBottomTabNavigator();
@@ -70,9 +70,7 @@ export default function RootNavigator() {
       <Stack.Screen name="CircuitSplit" component={CircuitSplitScreen} />
       <Stack.Screen name="WorkoutExecution" component={WorkoutExecutionScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="Settings">
-        {() => <PlaceholderScreen title="Settings" />}
-      </Stack.Screen>
+      <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
   );
 }

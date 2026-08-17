@@ -6,6 +6,7 @@ import IronHeader from '../components/IronHeader';
 import ScrollFloat from '../components/ScrollFloat';
 import { colors, typography, spacing, radius } from '../theme';
 import { getExerciseImage } from '../data/exerciseImages';
+import { useWeightUnitPreference } from '../hooks/useWeightUnitPreference';
 
 type ExecutionParams = {
   name?: string;
@@ -34,6 +35,7 @@ export default function WorkoutExecutionScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const params: ExecutionParams = route.params ?? {};
+  const { weightUnit } = useWeightUnitPreference();
 
   const exerciseName = params.name ?? 'EXERCISE';
   const kicker = params.kicker ?? params.dayTitle ?? 'WORKOUT';
@@ -125,7 +127,7 @@ export default function WorkoutExecutionScreen() {
 
         <View style={styles.listHeader}>
           <Text style={[styles.listHeaderText, { flex: 2, textAlign: 'center' }]}>SET</Text>
-          <Text style={[styles.listHeaderText, { flex: 4, textAlign: 'center' }]}>WEIGHT</Text>
+          <Text style={[styles.listHeaderText, { flex: 4, textAlign: 'center' }]}>WEIGHT ({weightUnit})</Text>
           <Text style={[styles.listHeaderText, { flex: 4, textAlign: 'center' }]}>REPS</Text>
           <View style={{ flex: 2, alignItems: 'center' }}>
             <MaterialIcons name="done" size={16} color={colors.onSurfaceVariant} />
@@ -167,7 +169,7 @@ export default function WorkoutExecutionScreen() {
                       placeholder="0"
                       placeholderTextColor={colors.surfaceContainerHighest}
                     />
-                    {!weight && <Text style={styles.inputPlaceholderUnit}>LBS</Text>}
+                    {!weight && <Text style={styles.inputPlaceholderUnit}>{weightUnit}</Text>}
                   </View>
                 </View>
                 <View style={{ flex: 4, alignItems: 'center' }}>

@@ -9,8 +9,10 @@ import {
   useWindowDimensions,
   ActivityIndicator,
   PanResponder,
-  findNodeHandle,
+  KeyboardAvoidingView,
+  Platform,
   type GestureResponderEvent,
+  type NativeMethods,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -47,26 +49,71 @@ function cmToFeetInches(cm: number) {
   return { feet: Math.floor(totalInches / 12), inches: totalInches % 12 };
 }
 
-function RulerScale({ count = 24, majorEvery = 4 }: { count?: number; majorEvery?: number }) {
+function RulerScale({
+  value,
+  onChange,
+  min,
+  max,
+  step = 1,
+  count = 24,
+  majorEvery = 4,
+  sensitivity = 6,
+}: {
+  value: number;
+  onChange: (next: number) => void;
+  min: number;
+  max: number;
+  step?: number;
+  count?: number;
+  majorEvery?: number;
+  sensitivity?: number;
+}) {
+  const stateRef = useRef({ value, onChange, min, max, step, sensitivity, startValue: value });
+  stateRef.current.value = value;
+  stateRef.current.onChange = onChange;
+  stateRef.current.min = min;
+  stateRef.current.max = max;
+  stateRef.current.step = step;
+  stateRef.current.sensitivity = sensitivity;
+
+  const pan = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        stateRef.current.startValue = stateRef.current.value;
+      },
+      onPanResponderMove: (_e: GestureResponderEvent, gesture: { dx: number }) => {
+        const { startValue, min, max, step, sensitivity, onChange } = stateRef.current;
+        const rawSteps = Math.round(gesture.dx / sensitivity);
+        const next = clamp(startValue + rawSteps * step, min, max);
+        onChange(next);
+      },
+    })
+  ).current;
+
   return (
-    <View style={rulerStyles.ruler}>
-      {Array.from({ length: count }).map((_, i) => {
-        const isMajor = i % majorEvery === 0;
-        return (
-          <View
-            key={i}
-            style={[
-              rulerStyles.tick,
-              { height: isMajor ? 9 : 4, backgroundColor: isMajor ? colors.primary : colors.outlineVariant },
-            ]}
-          />
-        );
-      })}
+    <View style={rulerStyles.touchArea} hitSlop={{ top: 14, bottom: 14 }} {...pan.panHandlers}>
+      <View style={rulerStyles.ruler} pointerEvents="none">
+        {Array.from({ length: count }).map((_, i) => {
+          const isMajor = i % majorEvery === 0;
+          return (
+            <View
+              key={i}
+              style={[
+                rulerStyles.tick,
+                { height: isMajor ? 9 : 4, backgroundColor: isMajor ? colors.primary : colors.outlineVariant },
+              ]}
+            />
+          );
+        })}
+      </View>
     </View>
   );
 }
 
 const rulerStyles = StyleSheet.create({
+  touchArea: { paddingVertical: 10, width: '100%' },
   ruler: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 10, width: '100%' },
   tick: { width: 1.5, borderRadius: 1 },
 });
@@ -106,10 +153,9 @@ export default function ProfileScreen() {
     requestAnimationFrame(() => {
       const scrollNode = scrollRef.current;
       const inputNode = ref.current;
-      const scrollHandle = scrollNode && findNodeHandle(scrollNode);
-      if (!scrollNode || !inputNode || !scrollHandle) return;
+      if (!scrollNode || !inputNode) return;
       inputNode.measureLayout(
-        scrollHandle,
+        scrollNode as unknown as NativeMethods,
         (_x: number, y: number, _w: number, h: number) => {
           scrollNode.scrollTo({ y: Math.max(y - 24, 0), animated: true });
         },
@@ -304,7 +350,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <View style={s.screen}>
+    <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <IronHeader showBack onBackPress={() => navigation.goBack()} />
       <ScrollView
         ref={scrollRef}
@@ -458,7 +504,12 @@ export default function ProfileScreen() {
                   placeholder="0"
                   placeholderTextColor={colors.onSurfaceVariant}
                 />
-                <RulerScale />
+                <RulerScale
+                  value={parseInt(cm, 10) || 0}
+                  onChange={(next) => setCm(String(next))}
+                  min={100}
+                  max={250}
+                />
                 <Text style={s.heightUnitLabel}>CM</Text>
               </View>
             </View>
@@ -476,7 +527,12 @@ export default function ProfileScreen() {
                   placeholder="0"
                   placeholderTextColor={colors.onSurfaceVariant}
                 />
-                <RulerScale />
+                <RulerScale
+                  value={parseInt(feet, 10) || 0}
+                  onChange={(next) => setFeet(String(next))}
+                  min={3}
+                  max={8}
+                />
                 <Text style={s.heightUnitLabel}>FT</Text>
               </View>
               <View style={s.heightField}>
@@ -491,7 +547,12 @@ export default function ProfileScreen() {
                   placeholder="0"
                   placeholderTextColor={colors.onSurfaceVariant}
                 />
-                <RulerScale />
+                <RulerScale
+                  value={parseInt(inches, 10) || 0}
+                  onChange={(next) => setInches(String(next))}
+                  min={0}
+                  max={11}
+                />
                 <Text style={s.heightUnitLabel}>IN</Text>
               </View>
             </View>
@@ -536,7 +597,7 @@ export default function ProfileScreen() {
           )}
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
