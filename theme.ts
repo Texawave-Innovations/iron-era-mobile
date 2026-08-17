@@ -1,0 +1,53 @@
+export const colors = {
+  surface: '#131313',
+  surfaceDim: '#131313',
+  surfaceBright: '#393939',
+  surfaceContainerLowest: '#0e0e0e',
+  surfaceContainerLow: '#1c1b1b',
+  surfaceContainer: '#201f1f',
+  surfaceContainerHigh: '#2a2a2a',
+  surfaceContainerHighest: '#353534',
+  onSurface: '#e5e2e1',
+  onSurfaceVariant: '#d1c5b4',
+  outline: '#9a8f80',
+  outlineVariant: '#4e4639',
+  primary: '#e9c176',
+  onPrimary: '#412d00',
+  primaryFixedDim: '#c5a059',
+  secondary: '#c6c6c7',
+  secondaryContainer: '#454748',
+  onSecondaryContainer: '#b5b5b6',
+  error: '#ffb4ab',
+  background: '#131313',
+  matteBlack: '#131313',
+  charcoal: '#201f1f',
+  agedGold: '#e9c176',
+  steelGray: '#4e4639',
+};
+
+export const typography = {
+  displayXl: { fontFamily: 'Oswald_700Bold', fontSize: 64, lineHeight: 74, letterSpacing: -1 },
+  headlineLg: { fontFamily: 'Oswald_700Bold', fontSize: 40, lineHeight: 48, letterSpacing: -0.5 },
+  headlineLgMobile: { fontFamily: 'Oswald_700Bold', fontSize: 32, lineHeight: 40, letterSpacing: -0.3 },
+  headlineMd: { fontFamily: 'Oswald_600SemiBold', fontSize: 22, lineHeight: 30 },
+  bodyLg: { fontFamily: 'Inter_400Regular', fontSize: 18, lineHeight: 28 },
+  bodyMd: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 23 },
+  labelCaps: { fontFamily: 'Oswald_600SemiBold', fontSize: 12, lineHeight: 20, letterSpacing: 1.8, textTransform: 'uppercase' as const },
+  statsNum: { fontFamily: 'Oswald_700Bold', fontSize: 30, lineHeight: 38, letterSpacing: -0.5 },
+};
+
+export const spacing = {
+  unit: 4,
+  gutter: 16,
+  marginMobile: 20,
+  stackSm: 8,
+  stackMd: 24,
+  stackLg: 56,
+};
+
+export const radius = {
+  sm: 6,
+  md: 10,
+  lg: 16,
+  pill: 999,
+};
