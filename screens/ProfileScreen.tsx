@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
   ActivityIndicator,
   PanResponder,
+  findNodeHandle,
   type GestureResponderEvent,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -105,9 +106,10 @@ export default function ProfileScreen() {
     requestAnimationFrame(() => {
       const scrollNode = scrollRef.current;
       const inputNode = ref.current;
-      if (!scrollNode || !inputNode) return;
+      const scrollHandle = scrollNode && findNodeHandle(scrollNode);
+      if (!scrollNode || !inputNode || !scrollHandle) return;
       inputNode.measureLayout(
-        scrollNode as unknown as React.ComponentRef<typeof ScrollView>,
+        scrollHandle,
         (_x: number, y: number, _w: number, h: number) => {
           scrollNode.scrollTo({ y: Math.max(y - 24, 0), animated: true });
         },

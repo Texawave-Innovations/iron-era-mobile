@@ -1,4 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
+// @ts-expect-error — getReactNativePersistence exists at runtime (Metro resolves
+// the RN-specific build) but is missing from firebase's rolled-up .d.ts types.
+// See https://github.com/firebase/firebase-js-sdk/issues/7615
 import { initializeAuth, getReactNativePersistence, type Auth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
