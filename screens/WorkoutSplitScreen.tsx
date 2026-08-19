@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -22,7 +22,8 @@ import IronHeader from '../components/IronHeader';
 import LoadingScreen from '../components/LoadingScreen';
 import ScrollFloat from '../components/ScrollFloat';
 import RevealOnScroll, { type RevealHandle } from '../components/RevealOnScroll';
-import { colors, typography, spacing, radius } from '../theme';
+import { darkColors, typography, spacing, radius } from '../theme';
+import { useThemeMode } from '../hooks/useThemeMode';
 import { PPL_SPLIT, PPL_NOTES, type PPLExercise, type PPLDay } from '../data/pplSplit';
 
 const WINDOW_HEIGHT = Dimensions.get('window').height;
@@ -43,12 +44,16 @@ function ExerciseRow({
   completed,
   onPress,
   onToggleComplete,
+  colors,
+  styles,
 }: {
   ex: Exercise;
   isLast: boolean;
   completed: boolean;
   onPress: () => void;
   onToggleComplete: () => void;
+  colors: ReturnType<typeof useThemeMode>['colors'];
+  styles: any;
 }) {
   return (
     <TouchableOpacity
@@ -101,6 +106,8 @@ function DayCard({
   onPressExercise,
   completedExercises,
   onToggleComplete,
+  colors,
+  styles,
 }: {
   day: DayProgram;
   expanded: boolean;
@@ -108,6 +115,8 @@ function DayCard({
   onPressExercise: (ex: Exercise) => void;
   completedExercises: Set<string>;
   onToggleComplete: (name: string) => void;
+  colors: ReturnType<typeof useThemeMode>['colors'];
+  styles: any;
 }) {
   return (
     <View style={styles.dayCard}>
@@ -152,6 +161,8 @@ function DayCard({
                   completed={completedExercises.has(ex.name)}
                   onPress={() => onPressExercise(ex)}
                   onToggleComplete={() => onToggleComplete(ex.name)}
+                  colors={colors}
+                  styles={styles}
                 />
               ))}
               <TouchableOpacity style={styles.startBtn} onPress={() => onPressExercise(day.exercises[0])} activeOpacity={0.85}>
@@ -168,6 +179,8 @@ function DayCard({
 
 export default function WorkoutSplitScreen() {
   const navigation = useNavigation<any>();
+  const { colors } = useThemeMode();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const route = useRoute<any>();
   const openDayId: string | undefined = route.params?.openDayId;
   const [loading, setLoading] = useState(true);
@@ -330,6 +343,8 @@ export default function WorkoutSplitScreen() {
                         onComplete: () => markCompleted(ex.name),
                       })
                     }
+                    colors={colors}
+                    styles={styles}
                   />
                 </RevealOnScroll>
               </View>
@@ -351,16 +366,16 @@ export default function WorkoutSplitScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ReturnType<typeof useThemeMode>['colors']) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: spacing.stackLg },
 
   hero: { width: '100%', height: 260, justifyContent: 'flex-end', margin: spacing.marginMobile, marginBottom: 0, borderWidth: 1, borderColor: colors.secondaryContainer, borderRadius: radius.md, overflow: 'hidden' },
   heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)' },
   heroContent: { padding: 20, gap: 4 },
-  heroKicker: { ...typography.labelCaps, color: colors.primary, letterSpacing: 2 },
-  heroTitle: { ...typography.displayXl, fontSize: 36, lineHeight: 42, color: colors.onSurface, textTransform: 'uppercase' },
-  heroSub: { ...typography.bodyMd, color: colors.onSurfaceVariant },
+  heroKicker: { ...typography.labelCaps, color: darkColors.primary, letterSpacing: 2 },
+  heroTitle: { ...typography.displayXl, fontSize: 36, lineHeight: 42, color: darkColors.onSurface, textTransform: 'uppercase' },
+  heroSub: { ...typography.bodyMd, color: darkColors.onSurfaceVariant },
 
   structureRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: spacing.marginMobile, paddingTop: spacing.stackMd },
   structureChip: { borderWidth: 1, borderColor: colors.secondaryContainer, borderRadius: radius.sm, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: colors.surfaceContainerLow },

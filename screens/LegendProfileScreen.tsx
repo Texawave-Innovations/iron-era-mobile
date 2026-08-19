@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -5,7 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import IronHeader from '../components/IronHeader';
 import ScrollFloat from '../components/ScrollFloat';
-import { colors, typography, spacing, radius } from '../theme';
+import { darkColors, typography, spacing, radius } from '../theme';
+import { useThemeMode } from '../hooks/useThemeMode';
 
 const DEFAULT_PROFILE = {
   headerTitle: 'DORIAN YATES',
@@ -29,7 +31,6 @@ const DEFAULT_PROFILE = {
     { label: 'OFF-SEASON WEIGHT', value: '300 LBS' },
     { label: 'OLYMPIA WINS', value: '6', accent: true },
   ],
-  ironPlusDesc: "Access Dorian's complete Blood and Guts training logs, exercise mechanics, and nutritional protocols.",
 };
 
 const PROFILES: Record<string, typeof DEFAULT_PROFILE> = {
@@ -55,7 +56,6 @@ const PROFILES: Record<string, typeof DEFAULT_PROFILE> = {
       { label: 'OFF-SEASON WEIGHT', value: '260 LBS' },
       { label: 'OLYMPIA WINS', value: '7', accent: true },
     ],
-    ironPlusDesc: "Access Arnold's complete Golden Era training logs, exercise mechanics, and nutritional protocols.",
   },
   zane: {
     headerTitle: 'FRANK ZANE',
@@ -79,7 +79,6 @@ const PROFILES: Record<string, typeof DEFAULT_PROFILE> = {
       { label: 'OFF-SEASON WEIGHT', value: '195 LBS' },
       { label: 'OLYMPIA WINS', value: '3', accent: true },
     ],
-    ironPlusDesc: "Access Frank's complete aesthetic training logs, exercise mechanics, and nutritional protocols.",
   },
   sergio: {
     headerTitle: 'SERGIO OLIVA',
@@ -103,7 +102,6 @@ const PROFILES: Record<string, typeof DEFAULT_PROFILE> = {
       { label: 'OFF-SEASON WEIGHT', value: '240 LBS' },
       { label: 'OLYMPIA WINS', value: '3', accent: true },
     ],
-    ironPlusDesc: "Access Sergio's complete training logs, exercise mechanics, and nutritional protocols.",
   },
   columbu: {
     headerTitle: 'FRANCO COLUMBU',
@@ -127,11 +125,12 @@ const PROFILES: Record<string, typeof DEFAULT_PROFILE> = {
       { label: 'OFF-SEASON WEIGHT', value: '200 LBS' },
       { label: 'OLYMPIA WINS', value: '2', accent: true },
     ],
-    ironPlusDesc: "Access Franco's complete strongman training logs, exercise mechanics, and nutritional protocols.",
   },
 };
 
 export default function LegendProfileScreen() {
+  const { colors } = useThemeMode();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const id: string | undefined = route.params?.id;
@@ -167,10 +166,6 @@ export default function LegendProfileScreen() {
 
         <View style={styles.tabsRow}>
           <Text style={[styles.tab, styles.tabActive]}>BIO</Text>
-          <View style={styles.tabLocked}>
-            <Text style={styles.tab}>METHODS</Text>
-            <MaterialIcons name="lock" size={12} color={colors.primary} />
-          </View>
         </View>
 
         <View style={styles.body}>
@@ -199,36 +194,26 @@ export default function LegendProfileScreen() {
               </View>
             ))}
           </View>
-
-          <View style={styles.ironPlus}>
-            <MaterialIcons name="lock" size={32} color={colors.primary} />
-            <Text style={styles.ironPlusTitle}>Unlock the System</Text>
-            <Text style={styles.ironPlusDesc}>{profile.ironPlusDesc}</Text>
-            <TouchableOpacity style={styles.ironPlusBtn}>
-              <Text style={styles.ironPlusBtnText}>UPGRADE TO IRON+</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ReturnType<typeof useThemeMode>['colors']) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.surface },
   content: { paddingBottom: spacing.stackLg },
   hero: { width: '100%', height: 380, justifyContent: 'flex-end', borderBottomWidth: 1, borderBottomColor: colors.outlineVariant, overflow: 'hidden' },
   heroContent: { padding: spacing.marginMobile, paddingBottom: 12, gap: 4 },
   tagRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
-  tag: { borderWidth: 1, borderColor: colors.outline, borderRadius: radius.sm, paddingHorizontal: 8, paddingVertical: 4, backgroundColor: 'rgba(19,19,19,0.7)' },
-  tagText: { ...typography.labelCaps, fontSize: 10, color: colors.onSurfaceVariant },
-  heroTitle: { ...typography.displayXl, fontSize: 44, lineHeight: 48, color: colors.onSurface, textTransform: 'uppercase', marginBottom: 8 },
+  tag: { borderWidth: 1, borderColor: darkColors.outline, borderRadius: radius.sm, paddingHorizontal: 8, paddingVertical: 4, backgroundColor: 'rgba(19,19,19,0.7)' },
+  tagText: { ...typography.labelCaps, fontSize: 10, color: darkColors.onSurfaceVariant },
+  heroTitle: { ...typography.displayXl, fontSize: 44, lineHeight: 48, color: darkColors.onSurface, textTransform: 'uppercase', marginBottom: 8 },
   trainBtn: { backgroundColor: colors.primary, borderRadius: radius.sm, paddingVertical: 12, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, alignSelf: 'flex-start' },
   trainBtnText: { ...typography.headlineMd, fontSize: 15, color: colors.onPrimary, textTransform: 'uppercase' },
   tabsRow: { flexDirection: 'row', gap: 24, paddingHorizontal: spacing.marginMobile, borderBottomWidth: 1, borderBottomColor: colors.outlineVariant, paddingBottom: 8, marginTop: 6 },
   tab: { ...typography.labelCaps, color: colors.onSurfaceVariant },
   tabActive: { color: colors.primary },
-  tabLocked: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   body: { paddingHorizontal: spacing.marginMobile, paddingTop: 10, paddingBottom: spacing.stackLg, gap: 12 },
   eraTitle: { ...typography.headlineMd, color: colors.primary, textTransform: 'uppercase' },
   paragraph: { ...typography.bodyLg, fontSize: 15, lineHeight: 22, color: colors.onSurfaceVariant },
@@ -241,10 +226,6 @@ const styles = StyleSheet.create({
   statRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.outlineVariant },
   statLabel: { ...typography.labelCaps, color: colors.onSurfaceVariant },
   statValue: { ...typography.statsNum, color: colors.onSurface },
-  ironPlus: { backgroundColor: colors.surfaceContainer, borderWidth: 1, borderColor: colors.primary, borderRadius: radius.md, padding: spacing.marginMobile, alignItems: 'center', gap: 12 },
-  ironPlusTitle: { ...typography.headlineMd, color: colors.onSurface, textTransform: 'uppercase' },
-  ironPlusDesc: { ...typography.bodyMd, color: colors.onSurfaceVariant, textAlign: 'center' },
-  ironPlusBtn: { borderWidth: 1, borderColor: colors.primary, borderRadius: radius.sm, paddingVertical: 10, width: '100%', alignItems: 'center', marginTop: 4 },
-  ironPlusBtnText: { ...typography.labelCaps, color: colors.primary },
 });
+
 

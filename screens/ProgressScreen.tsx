@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import IronHeader from '../components/IronHeader';
 import ScrollFloat from '../components/ScrollFloat';
-import { colors, typography, spacing, radius } from '../theme';
-import { useAnonymousAuth } from '../hooks/useAnonymousAuth';
-import { getUserStats } from '../data/userStats';
+import { typography, spacing, radius } from '../theme';
+import { useThemeMode } from '../hooks/useThemeMode';
+
+type ThemeColors = ReturnType<typeof useThemeMode>['colors'];
 
 type Wizard = 'metrics' | 'calories';
 type UnitSystem = 'metric' | 'imperial';
@@ -72,19 +73,21 @@ function feetInchesToCm(feet: number, inches: number) {
   return Math.round((feet * 12 + inches) * 2.54);
 }
 
-function getBMICategory(bmi: number) {
+function getBMICategory(bmi: number, colors: ThemeColors) {
   if (bmi < 18.5) return { text: 'UNDERWEIGHT', color: '#4FACFE' };
   if (bmi < 25) return { text: 'NORMAL', color: '#7cb87c' };
   if (bmi < 30) return { text: 'OVERWEIGHT', color: colors.primary };
   return { text: 'OBESE', color: colors.error };
 }
 
-function getWHRCategory(whr: number, gender: Gender) {
+function getWHRCategory(whr: number, gender: Gender, colors: ThemeColors) {
   const thresholds = gender === 'MALE' ? [0.9, 1.0] : [0.8, 0.85];
   if (whr < thresholds[0]) return { text: 'LOW RISK', color: '#7cb87c' };
   if (whr < thresholds[1]) return { text: 'MODERATE RISK', color: colors.primary };
   return { text: 'HIGH RISK', color: colors.error };
 }
+
+type Styles = ReturnType<typeof makeStyles>;
 
 function Field({
   label,
@@ -92,12 +95,16 @@ function Field({
   onChangeText,
   placeholder,
   suffix,
+  colors,
+  styles,
 }: {
   label: string;
   value: string;
   onChangeText: (v: string) => void;
   placeholder?: string;
   suffix?: string;
+  colors: ThemeColors;
+  styles: Styles;
 }) {
   return (
     <View style={styles.field}>
@@ -122,13 +129,17 @@ function HeightInput({
   height,
   onChangeHeight,
   unitSystem,
+  colors,
+  styles,
 }: {
   height: string;
   onChangeHeight: (v: string) => void;
   unitSystem: UnitSystem;
+  colors: ThemeColors;
+  styles: Styles;
 }) {
   if (unitSystem === 'metric') {
-    return <Field label="HEIGHT" value={height} onChangeText={onChangeHeight} suffix="CM" />;
+    return <Field label="HEIGHT" value={height} onChangeText={onChangeHeight} suffix="CM" colors={colors} styles={styles} />;
   }
 
   const cm = toNumber(height);
@@ -149,14 +160,14 @@ function HeightInput({
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>HEIGHT</Text>
       <View style={styles.fieldRow}>
-        <Field label="" value={feetStr} onChangeText={setFeet} suffix="FT" />
-        <Field label="" value={inchesStr} onChangeText={setInches} suffix="IN" />
+        <Field label="" value={feetStr} onChangeText={setFeet} suffix="FT" colors={colors} styles={styles} />
+        <Field label="" value={inchesStr} onChangeText={setInches} suffix="IN" colors={colors} styles={styles} />
       </View>
     </View>
   );
 }
 
-function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+function Chip({ label, active, onPress, styles }: { label: string; active: boolean; onPress: () => void; styles: Styles }) {
   return (
     <TouchableOpacity style={[styles.chip, active && styles.chipActive]} onPress={onPress} activeOpacity={0.75}>
       <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
@@ -164,7 +175,7 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
   );
 }
 
-function ResultRow({ value, label, sub, color }: { value: string; label: string; sub?: string; color?: string }) {
+function ResultRow({ value, label, sub, color, styles }: { value: string; label: string; sub?: string; color?: string; styles: Styles }) {
   return (
     <View style={styles.result}>
       <Text style={[styles.resultValue, color ? { color } : null]}>{value}</Text>
@@ -174,7 +185,7 @@ function ResultRow({ value, label, sub, color }: { value: string; label: string;
   );
 }
 
-function Card({ icon, title, children }: { icon: keyof typeof MaterialIcons.glyphMap; title: string; children: React.ReactNode }) {
+function Card({ icon, title, children, colors, styles }: { icon: keyof typeof MaterialIcons.glyphMap; title: string; children: React.ReactNode; colors: ThemeColors; styles: Styles }) {
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -187,8 +198,8 @@ function Card({ icon, title, children }: { icon: keyof typeof MaterialIcons.glyp
 }
 
 export default function ProgressScreen() {
-  const { uid } = useAnonymousAuth();
-
+  const { colors } = useThemeMode();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [wizard, setWizard] = useState<Wizard>('metrics');
   const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric');
   const [gender, setGender] = useState<Gender>('MALE');
@@ -207,18 +218,6 @@ export default function ProgressScreen() {
   const [whr, setWhr] = useState<number | null>(null);
   const [bmr, setBmr] = useState<number | null>(null);
   const [dailyCalories, setDailyCalories] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!uid) return;
-    getUserStats(uid).then((stats) => {
-      if (!stats) return;
-      if (stats.gender) setGender(stats.gender);
-      if (stats.weightUnit) setUnitSystem(stats.weightUnit === 'LBS' ? 'imperial' : 'metric');
-      if (stats.weight) setWeight(String(stats.weight));
-      if (stats.height) setHeight(String(stats.height));
-      if (stats.age) setAge(String(stats.age));
-    }).catch(() => {});
-  }, [uid]);
 
   const calculateBMI = () => {
     if (!isValid(weight, height)) return;
@@ -278,7 +277,7 @@ export default function ProgressScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <IronHeader title="PROGRESS" />
+      <IronHeader title="GYMCOM" />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.pageHeader}>
           <ScrollFloat textStyle={styles.pageTitle} duration={1200} distance={20} stagger={0.045}>
@@ -307,11 +306,11 @@ export default function ProgressScreen() {
         </View>
 
         <View style={styles.unitRow}>
-          <Chip label="KG" active={unitSystem === 'metric'} onPress={() => handleUnitSystemChange('metric')} />
-          <Chip label="POUNDS" active={unitSystem === 'imperial'} onPress={() => handleUnitSystemChange('imperial')} />
+          <Chip label="KG" active={unitSystem === 'metric'} onPress={() => handleUnitSystemChange('metric')} styles={styles} />
+          <Chip label="POUNDS" active={unitSystem === 'imperial'} onPress={() => handleUnitSystemChange('imperial')} styles={styles} />
           <View style={styles.unitRowSpacer} />
-          <Chip label="MALE" active={gender === 'MALE'} onPress={() => setGender('MALE')} />
-          <Chip label="FEMALE" active={gender === 'FEMALE'} onPress={() => setGender('FEMALE')} />
+          <Chip label="MALE" active={gender === 'MALE'} onPress={() => setGender('MALE')} styles={styles} />
+          <Chip label="FEMALE" active={gender === 'FEMALE'} onPress={() => setGender('FEMALE')} styles={styles} />
         </View>
         <Text style={styles.unitHint}>
           KG = METRIC (WEIGHT IN KG, HEIGHT IN CM) · POUNDS = IMPERIAL (WEIGHT IN LBS, HEIGHT IN FT/IN)
@@ -319,58 +318,58 @@ export default function ProgressScreen() {
 
         {wizard === 'metrics' ? (
           <>
-            <Card icon="monitor-weight" title="BMI CALCULATOR">
-              <Field label="WEIGHT" value={weight} onChangeText={setWeight} suffix={weightUnitLabel} />
-              <HeightInput height={height} onChangeHeight={setHeight} unitSystem={unitSystem} />
+            <Card icon="monitor-weight" title="BMI CALCULATOR" colors={colors} styles={styles}>
+              <Field label="WEIGHT" value={weight} onChangeText={setWeight} suffix={weightUnitLabel} colors={colors} styles={styles} />
+              <HeightInput height={height} onChangeHeight={setHeight} unitSystem={unitSystem} colors={colors} styles={styles} />
               <TouchableOpacity style={styles.calcBtn} onPress={calculateBMI} activeOpacity={0.85}>
                 <Text style={styles.calcBtnText}>CALCULATE BMI</Text>
                 <MaterialIcons name="arrow-forward" size={16} color={colors.onPrimary} />
               </TouchableOpacity>
               {bmi !== null && (
-                <ResultRow value={String(bmi)} label="BODY MASS INDEX" sub={getBMICategory(bmi).text} color={getBMICategory(bmi).color} />
+                <ResultRow value={String(bmi)} label="BODY MASS INDEX" sub={getBMICategory(bmi, colors).text} color={getBMICategory(bmi, colors).color} styles={styles} />
               )}
             </Card>
 
-            <Card icon="accessibility-new" title="LEAN MASS & IDEAL WEIGHT">
+            <Card icon="accessibility-new" title="LEAN MASS & IDEAL WEIGHT" colors={colors} styles={styles}>
               <View style={styles.fieldRow}>
-                <Field label="WEIGHT" value={weight} onChangeText={setWeight} suffix={weightUnitLabel} />
-                <Field label="BODY FAT" value={bodyFat} onChangeText={setBodyFat} suffix="%" />
+                <Field label="WEIGHT" value={weight} onChangeText={setWeight} suffix={weightUnitLabel} colors={colors} styles={styles} />
+                <Field label="BODY FAT" value={bodyFat} onChangeText={setBodyFat} suffix="%" colors={colors} styles={styles} />
               </View>
-              <HeightInput height={height} onChangeHeight={setHeight} unitSystem={unitSystem} />
+              <HeightInput height={height} onChangeHeight={setHeight} unitSystem={unitSystem} colors={colors} styles={styles} />
               <TouchableOpacity style={styles.calcBtn} onPress={calculateLeanAndIBW} activeOpacity={0.85}>
                 <Text style={styles.calcBtnText}>CALCULATE</Text>
                 <MaterialIcons name="arrow-forward" size={16} color={colors.onPrimary} />
               </TouchableOpacity>
               <View style={styles.resultRowSplit}>
-                {leanMass !== null && <ResultRow value={`${leanMass} KG`} label="LEAN BODY MASS" />}
-                {ibw !== null && <ResultRow value={`${ibw} KG`} label="IDEAL BODY WEIGHT" />}
+                {leanMass !== null && <ResultRow value={`${leanMass} KG`} label="LEAN BODY MASS" styles={styles} />}
+                {ibw !== null && <ResultRow value={`${ibw} KG`} label="IDEAL BODY WEIGHT" styles={styles} />}
               </View>
             </Card>
 
-            <Card icon="architecture" title="WAIST-TO-HIP RATIO">
+            <Card icon="architecture" title="WAIST-TO-HIP RATIO" colors={colors} styles={styles}>
               <View style={styles.fieldRow}>
-                <Field label="WAIST" value={waist} onChangeText={setWaist} suffix={lengthUnitLabel} />
-                <Field label="HIP" value={hip} onChangeText={setHip} suffix={lengthUnitLabel} />
+                <Field label="WAIST" value={waist} onChangeText={setWaist} suffix={lengthUnitLabel} colors={colors} styles={styles} />
+                <Field label="HIP" value={hip} onChangeText={setHip} suffix={lengthUnitLabel} colors={colors} styles={styles} />
               </View>
               <TouchableOpacity style={styles.calcBtn} onPress={calculateWHR} activeOpacity={0.85}>
                 <Text style={styles.calcBtnText}>CALCULATE WHR</Text>
                 <MaterialIcons name="arrow-forward" size={16} color={colors.onPrimary} />
               </TouchableOpacity>
               {whr !== null && (
-                <ResultRow value={String(whr)} label="WAIST-TO-HIP RATIO" sub={getWHRCategory(whr, gender).text} color={getWHRCategory(whr, gender).color} />
+                <ResultRow value={String(whr)} label="WAIST-TO-HIP RATIO" sub={getWHRCategory(whr, gender, colors).text} color={getWHRCategory(whr, gender, colors).color} styles={styles} />
               )}
             </Card>
           </>
         ) : (
-          <Card icon="local-fire-department" title="BMR & DAILY CALORIES">
-            <Field label="WEIGHT" value={weight} onChangeText={setWeight} suffix={weightUnitLabel} />
-            <HeightInput height={height} onChangeHeight={setHeight} unitSystem={unitSystem} />
-            <Field label="AGE" value={age} onChangeText={setAge} suffix="YRS" />
+          <Card icon="local-fire-department" title="BMR & DAILY CALORIES" colors={colors} styles={styles}>
+            <Field label="WEIGHT" value={weight} onChangeText={setWeight} suffix={weightUnitLabel} colors={colors} styles={styles} />
+            <HeightInput height={height} onChangeHeight={setHeight} unitSystem={unitSystem} colors={colors} styles={styles} />
+            <Field label="AGE" value={age} onChangeText={setAge} suffix="YRS" colors={colors} styles={styles} />
 
             <Text style={styles.fieldLabel}>ACTIVITY LEVEL</Text>
             <View style={styles.activityWrap}>
               {ACTIVITY_LEVELS.map((lvl) => (
-                <Chip key={lvl.key} label={lvl.label} active={activityLevel === lvl.key} onPress={() => setActivityLevel(lvl.key)} />
+                <Chip key={lvl.key} label={lvl.label} active={activityLevel === lvl.key} onPress={() => setActivityLevel(lvl.key)} styles={styles} />
               ))}
             </View>
 
@@ -380,9 +379,9 @@ export default function ProgressScreen() {
             </TouchableOpacity>
 
             <View style={styles.resultRowSplit}>
-              {bmr !== null && <ResultRow value={String(bmr)} label="BMR (CAL/DAY)" />}
+              {bmr !== null && <ResultRow value={String(bmr)} label="BMR (CAL/DAY)" styles={styles} />}
               {dailyCalories !== null && (
-                <ResultRow value={String(dailyCalories)} label="DAILY CALORIES" sub={ACTIVITY_LEVELS.find((a) => a.key === activityLevel)?.label} color={colors.primary} />
+                <ResultRow value={String(dailyCalories)} label="DAILY CALORIES" sub={ACTIVITY_LEVELS.find((a) => a.key === activityLevel)?.label} color={colors.primary} styles={styles} />
               )}
             </View>
           </Card>
@@ -392,7 +391,8 @@ export default function ProgressScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.marginMobile, paddingBottom: spacing.stackLg, gap: spacing.stackMd },
   pageHeader: { gap: 4 },
@@ -483,4 +483,5 @@ const styles = StyleSheet.create({
   resultValue: { ...typography.statsNum, fontSize: 32, color: colors.onSurface },
   resultLabel: { ...typography.labelCaps, fontSize: 9, color: colors.onSurfaceVariant, marginTop: 4 },
   resultSub: { ...typography.labelCaps, fontSize: 10, marginTop: 4 },
-});
+  });
+}

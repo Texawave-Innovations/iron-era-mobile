@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import IronHeader from '../components/IronHeader';
 import ScrollFloat from '../components/ScrollFloat';
-import { colors, typography, spacing, radius } from '../theme';
+import { darkColors, typography, spacing, radius } from '../theme';
+import { useThemeMode } from '../hooks/useThemeMode';
 
 // const ERAS = ['ALL ERAS', "60s - PIONEERS", "70s - GOLDEN AGE", "80s - MASS MONSTERS", "90s - UNCHARTED"];
 
@@ -39,11 +41,13 @@ const LEGENDS = [
 ];
 
 export default function LegendsScreen() {
+  const { colors } = useThemeMode();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const navigation = useNavigation<any>();
 
   return (
     <View style={styles.screen}>
-      <IronHeader title="IRON ERA" />
+      <IronHeader title="GYMCOM" />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.pageHeader}>
           <ScrollFloat textStyle={styles.pageTitle} duration={1400} distance={22} stagger={0.045}>
@@ -57,7 +61,7 @@ export default function LegendsScreen() {
             <View key={era} style={[styles.filterChip, i === 0 && styles.filterChipActive]}>
               <Text style={[styles.filterText, i === 0 && styles.filterTextActive]}>{era}</Text>
             </View> */}
-          {/*))}
+        {/*))}
         </ScrollView> */}
 
         <View style={styles.grid}>
@@ -71,10 +75,10 @@ export default function LegendsScreen() {
               <ImageBackground
                 source={typeof legend.image === 'string' ? { uri: legend.image } : legend.image}
                 style={StyleSheet.absoluteFill}
-                imageStyle={{ opacity: 0.65, resizeMode: 'cover' }}
+                imageStyle={{ resizeMode: 'cover' }}
                 resizeMode="cover"
               />
-              <LinearGradient colors={['transparent', 'rgba(19,19,19,0.7)', 'rgba(19,19,19,0.95)']} style={StyleSheet.absoluteFill} />
+              <LinearGradient colors={['transparent', 'rgba(19,19,19,0.75)', 'rgba(19,19,19,0.95)']} style={StyleSheet.absoluteFill} />
               <View style={styles.cardContent}>
                 <View style={styles.tagRow}>
                   {legend.tags.map((t) => (
@@ -92,7 +96,7 @@ export default function LegendsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ReturnType<typeof useThemeMode>['colors']) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: spacing.stackLg },
   pageHeader: {
@@ -112,8 +116,8 @@ const styles = StyleSheet.create({
   card: { aspectRatio: 3 / 4, backgroundColor: colors.surfaceContainer, borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: radius.md, justifyContent: 'flex-end', overflow: 'hidden' },
   cardContent: { padding: spacing.stackMd },
   tagRow: { flexDirection: 'row', gap: 8, marginBottom: spacing.stackSm },
-  tag: { borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: radius.sm, paddingHorizontal: 8, paddingVertical: 4, backgroundColor: 'rgba(28,27,27,0.8)' },
-  tagText: { ...typography.labelCaps, color: colors.onSurfaceVariant },
-  cardName: { ...typography.headlineLgMobile, fontSize: 26, lineHeight: 32, color: colors.onSurface, textTransform: 'uppercase', marginBottom: 8 },
-  cardDesc: { ...typography.bodyMd, color: colors.onSurfaceVariant },
+  tag: { borderWidth: 1, borderColor: darkColors.outlineVariant, borderRadius: radius.sm, paddingHorizontal: 8, paddingVertical: 4, backgroundColor: 'rgba(28,27,27,0.8)' },
+  tagText: { ...typography.labelCaps, color: darkColors.onSurfaceVariant },
+  cardName: { ...typography.headlineLgMobile, fontSize: 26, lineHeight: 32, color: darkColors.onSurface, textTransform: 'uppercase', marginBottom: 8 },
+  cardDesc: { ...typography.bodyMd, color: darkColors.onSurfaceVariant },
 });

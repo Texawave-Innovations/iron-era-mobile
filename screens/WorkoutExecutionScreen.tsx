@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ImageBackground, TextInput, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import IronHeader from '../components/IronHeader';
 import ScrollFloat from '../components/ScrollFloat';
-import { colors, typography, spacing, radius } from '../theme';
+import { darkColors, typography, spacing, radius } from '../theme';
+import { useThemeMode } from '../hooks/useThemeMode';
 import { getExerciseImage } from '../data/exerciseImages';
 import { useWeightUnitPreference } from '../hooks/useWeightUnitPreference';
 
@@ -34,6 +35,8 @@ function formatTime(totalSec: number) {
 export default function WorkoutExecutionScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const { colors } = useThemeMode();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const params: ExecutionParams = route.params ?? {};
   const { weightUnit } = useWeightUnitPreference();
 
@@ -95,14 +98,15 @@ export default function WorkoutExecutionScreen() {
 
   return (
     <View style={styles.screen}>
-      <IronHeader title="IRON ERA" showBack onBackPress={() => navigation.goBack()} />
+      <IronHeader title="GYMCOM" showBack onBackPress={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.content}>
         <ImageBackground
           source={{ uri: getExerciseImage(exerciseName) }}
           style={styles.hero}
-          imageStyle={{ opacity: 0.5, resizeMode: 'cover' }}
+          imageStyle={{ resizeMode: 'cover' }}
           resizeMode="cover"
         >
+          <View style={styles.heroScrim} />
           <View style={styles.heroContent}>
             <Text style={styles.heroLabel}>{kicker.toUpperCase()}</Text>
             <ScrollFloat textStyle={styles.heroTitle} duration={1400} distance={20} stagger={0.045}>
@@ -233,13 +237,14 @@ export default function WorkoutExecutionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ReturnType<typeof useThemeMode>['colors']) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.surface },
   content: { paddingBottom: 180 },
   hero: { height: 260, justifyContent: 'flex-end', borderBottomWidth: 1, borderBottomColor: colors.outlineVariant, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.surfaceContainerLowest },
+  heroScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
   heroContent: { padding: spacing.marginMobile, paddingBottom: spacing.stackSm },
-  heroLabel: { ...typography.labelCaps, color: colors.primary, letterSpacing: 3, marginBottom: 4 },
-  heroTitle: { ...typography.displayXl, fontSize: 40, lineHeight: 46, color: colors.onSurface, textTransform: 'uppercase' },
+  heroLabel: { ...typography.labelCaps, color: darkColors.primary, letterSpacing: 3, marginBottom: 4 },
+  heroTitle: { ...typography.displayXl, fontSize: 40, lineHeight: 46, color: darkColors.onSurface, textTransform: 'uppercase' },
   comparison: {
     backgroundColor: colors.surfaceContainerLowest,
     borderBottomWidth: 1,
@@ -354,3 +359,4 @@ const styles = StyleSheet.create({
   completeBtn: { margin: spacing.marginMobile, backgroundColor: colors.surfaceContainerHigh, borderWidth: 1, borderColor: colors.outline, borderRadius: radius.sm, paddingVertical: 16, alignItems: 'center' },
   completeBtnText: { ...typography.headlineMd, color: colors.onSurface, textTransform: 'uppercase' },
 });
+

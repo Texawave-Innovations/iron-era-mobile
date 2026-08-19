@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Image, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../theme';
+import { darkColors as colors } from '../theme';
 
 export default function LaunchScreen() {
   const enter = useRef(new Animated.Value(0)).current;
@@ -41,7 +41,7 @@ export default function LaunchScreen() {
             transform: [{ scale: Animated.multiply(enterScale, breatheScale) }, { translateY: enterTranslateY }],
           }}
         >
-          <Image source={require('../assets/iron-era-icon.png')} style={styles.logo} resizeMode="cover" />
+          <Image source={require('../assets/gymcom-icon.png')} style={styles.logo} resizeMode="cover" />
         </Animated.View>
       </View>
     </View>

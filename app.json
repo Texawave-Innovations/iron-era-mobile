@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Gym-App",
-    "slug": "Gym-App",
+    "name": "Gymcom",
+    "slug": "Gymcom",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/iron-era-icon.png",
+    "icon": "./assets/gymcom-icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
@@ -12,14 +12,14 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/iron-era-icon.png",
+        "foregroundImage": "./assets/gymcom-icon.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/iron-era-icon.png"
+      "favicon": "./assets/gymcom-icon.png"
     },
     "plugins": [
       "expo-font",

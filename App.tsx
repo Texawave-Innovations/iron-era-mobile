@@ -14,31 +14,32 @@ import { useFonts as useInterFonts, Inter_400Regular, Inter_700Bold } from '@exp
 
 import RootNavigator from './navigation/RootNavigator';
 import LaunchScreen from './components/LaunchScreen';
-import { colors } from './theme';
-import { useAnonymousAuth } from './hooks/useAnonymousAuth';
 import { WeightUnitProvider } from './hooks/useWeightUnitPreference';
+import { ThemeModeProvider, useThemeMode } from './hooks/useThemeMode';
 
 SplashScreen.preventAutoHideAsync();
 
-const navTheme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    background: colors.surface,
-    card: colors.surface,
-    border: colors.outlineVariant,
-    primary: colors.primary,
-    text: colors.onSurface,
-  },
-};
-
 function AppContent() {
+  const { colors, mode } = useThemeMode();
+
+  const navTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: colors.surface,
+      card: colors.surface,
+      border: colors.outlineVariant,
+      primary: colors.primary,
+      text: colors.onSurface,
+    },
+  };
+
   return (
     <SafeAreaProvider>
       <WeightUnitProvider>
         <NavigationContainer theme={navTheme}>
           <RootNavigator />
-          <StatusBar style="light" />
+          <StatusBar style={mode === 'light' ? 'dark' : 'light'} />
         </NavigationContainer>
       </WeightUnitProvider>
     </SafeAreaProvider>
@@ -49,7 +50,6 @@ export default function App() {
   const [oswaldLoaded] = useOswaldFonts({ Oswald_500Medium, Oswald_600SemiBold, Oswald_700Bold });
   const [interLoaded] = useInterFonts({ Inter_400Regular, Inter_700Bold });
   const fontsLoaded = oswaldLoaded && interLoaded;
-  const { ready: authReady } = useAnonymousAuth();
   const nativeSplashHidden = useRef(false);
 
   useEffect(() => {
@@ -59,13 +59,15 @@ export default function App() {
     }
   }, []);
 
-  if (!fontsLoaded || !authReady) return <LaunchScreen />;
+  if (!fontsLoaded) return <LaunchScreen />;
 
   if (Platform.OS === 'web') {
     return (
       <View style={styles.webWrapper}>
         <View style={styles.phoneFrame}>
-          <AppContent />
+          <ThemeModeProvider>
+            <AppContent />
+          </ThemeModeProvider>
         </View>
       </View>
     );
@@ -73,7 +75,9 @@ export default function App() {
 
   return (
     <View style={{ flex: 1 }}>
-      <AppContent />
+      <ThemeModeProvider>
+        <AppContent />
+      </ThemeModeProvider>
     </View>
   );
 }

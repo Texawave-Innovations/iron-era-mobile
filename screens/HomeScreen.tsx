@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -5,7 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import IronHeader from '../components/IronHeader';
 import ScrollFloat from '../components/ScrollFloat';
-import { colors, typography, spacing, radius } from '../theme';
+import { darkColors, typography, spacing, radius } from '../theme';
+import { useThemeMode } from '../hooks/useThemeMode';
 import { PPL_SPLIT } from '../data/pplSplit';
 import { getTodaysLesson } from '../data/ironLessons';
 
@@ -53,6 +55,8 @@ const LEGENDS = [
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
+  const { colors } = useThemeMode();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const todaysDay = getTodaysSplitDay();
   const todaysLesson = getTodaysLesson();
 
@@ -113,7 +117,7 @@ export default function HomeScreen() {
                 activeOpacity={0.85}
                 onPress={() => navigation.navigate(legend.route, legend.params)}
               >
-                <Image source={legend.image} style={[StyleSheet.absoluteFill, { opacity: 0.75 }]} contentFit="cover" />
+                <Image source={legend.image} style={StyleSheet.absoluteFill} contentFit="cover" />
                 <LinearGradient colors={['transparent', 'rgba(14,14,14,0.85)']} style={StyleSheet.absoluteFill} />
                 <View style={styles.legendCardContent}>
                   <Text style={styles.legendLabel}>{legend.label}</Text>
@@ -169,7 +173,7 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ReturnType<typeof useThemeMode>['colors']) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.surfaceContainerLowest },
   content: { paddingBottom: spacing.stackLg },
   hero: { width: '100%', height: 520, justifyContent: 'flex-end', overflow: 'hidden' },
@@ -221,8 +225,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceContainer,
   },
   legendCardContent: { padding: spacing.gutter },
-  legendLabel: { ...typography.labelCaps, color: colors.primary, marginBottom: 4 },
-  legendName: { ...typography.headlineMd, color: colors.onSurface, textTransform: 'uppercase' },
+  legendLabel: { ...typography.labelCaps, color: darkColors.primary, marginBottom: 4 },
+  legendName: { ...typography.headlineMd, color: darkColors.onSurface, textTransform: 'uppercase' },
   lessonCard: { backgroundColor: colors.surfaceContainer, borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: radius.md, padding: spacing.stackMd },
   lessonBody: { ...typography.bodyMd, color: colors.onSurfaceVariant, marginTop: 8 },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 2, backgroundColor: colors.outlineVariant, borderRadius: radius.md, overflow: 'hidden' },

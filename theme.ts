@@ -1,4 +1,4 @@
-export const colors = {
+export const darkColors = {
   surface: '#131313',
   surfaceDim: '#131313',
   surfaceBright: '#393939',
@@ -24,6 +24,35 @@ export const colors = {
   agedGold: '#e9c176',
   steelGray: '#4e4639',
 };
+
+export const lightColors = {
+  surface: '#FBF9F4',
+  surfaceDim: '#e5e2e1',
+  surfaceBright: '#ffffff',
+  surfaceContainerLowest: '#ffffff',
+  surfaceContainerLow: '#f6f3eb',
+  surfaceContainer: '#ffffff',
+  surfaceContainerHigh: '#f0ebe1',
+  surfaceContainerHighest: '#e5e2e1',
+  onSurface: '#131313',
+  onSurfaceVariant: '#4e4639',
+  outline: '#d1c5b4',
+  outlineVariant: '#d1c5b4',
+  primary: '#c5a059',
+  onPrimary: '#ffffff',
+  primaryFixedDim: '#e9c176',
+  secondary: '#c6c6c7',
+  secondaryContainer: '#e3e2e3',
+  onSecondaryContainer: '#2f3132',
+  error: '#ffb4ab',
+  background: '#FBF9F4',
+  matteBlack: '#131313',
+  charcoal: '#131313',
+  agedGold: '#c5a059',
+  steelGray: '#4e4639',
+};
+
+export type ThemeColors = typeof darkColors;
 
 export const typography = {
   displayXl: { fontFamily: 'Oswald_700Bold', fontSize: 64, lineHeight: 74, letterSpacing: -1 },

@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, TextInput, Animated, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import IronHeader from '../components/IronHeader';
 import ScrollFloat from '../components/ScrollFloat';
-import { colors, typography, spacing, radius } from '../theme';
+import { darkColors, typography, spacing, radius } from '../theme';
+import { useThemeMode } from '../hooks/useThemeMode';
 
 type Level = 'beginner' | 'intermediate' | 'custom' | 'legend';
 
@@ -25,7 +26,6 @@ const WORKOUTS = [
     exercises: 8,
     sets: 24,
     duration: '40m',
-    premium: false,
     image: 'https://images.pexels.com/photos/866027/pexels-photo-866027.jpeg',
   },
   {
@@ -37,7 +37,6 @@ const WORKOUTS = [
     exercises: 5,
     sets: 15,
     duration: '45m',
-    premium: false,
     image: 'https://images.pexels.com/photos/14599070/pexels-photo-14599070.jpeg',
   },
   {
@@ -49,7 +48,6 @@ const WORKOUTS = [
     exercises: 10,
     sets: 34,
     duration: '85m',
-    premium: false,
     image: require('../assets/splitarnold.jpg'),
     imageHeight: 210,
   },
@@ -62,7 +60,6 @@ const WORKOUTS = [
     exercises: 14,
     sets: 14,
     duration: '30m',
-    premium: false,
     image: require('../assets/splitmike.jpg'),
     imageHeight: 210,
   },
@@ -75,7 +72,6 @@ const WORKOUTS = [
     exercises: 10,
     sets: 40,
     duration: '75m',
-    premium: true,
     image: require('../assets/tom-platz-workout.png'),
     imageHeight: 210,
   },
@@ -88,7 +84,6 @@ const WORKOUTS = [
     exercises: 5,
     sets: 15,
     duration: '45m',
-    premium: false,
     image: require('../assets/splitkevinlev.webp'),
     imageHeight: 210,
   },
@@ -129,6 +124,8 @@ function AnimatedFireIcon() {
 type CustomSplit = { id: string; name: string; baseIds: string[] };
 
 export default function WorkoutsScreen() {
+  const { colors } = useThemeMode();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const navigation = useNavigation<any>();
   const [level, setLevel] = useState<Level>('beginner');
   const [customSplits, setCustomSplits] = useState<CustomSplit[]>([]);
@@ -176,7 +173,7 @@ export default function WorkoutsScreen() {
 
   return (
     <View style={styles.screen}>
-      <IronHeader title="IRON ERA" />
+      <IronHeader title="GYMCOM" />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} decelerationRate="normal">
         <View style={styles.pageHeader}>
           <ScrollFloat textStyle={styles.pageTitle} duration={1400} distance={20} stagger={0.045}>
@@ -269,7 +266,7 @@ export default function WorkoutsScreen() {
                     <Text style={styles.emptyTitle}>Build Your Own</Text>
                     <Text style={styles.emptyBody}>Combine days from existing splits into a program that's yours.</Text>
                     <TouchableOpacity style={styles.newSplitBtn} activeOpacity={0.85} onPress={() => setBuilderOpen(true)}>
-                      <MaterialIcons name="add" size={18} color={colors.primary}/>
+                      <MaterialIcons name="add" size={18} color={colors.primary} />
                       <Text style={styles.newSplitBtnText}>Create Custom Split </Text>
                     </TouchableOpacity>
                   </View>
@@ -340,62 +337,59 @@ export default function WorkoutsScreen() {
             <Text style={styles.emptyBody}>More {LEVELS.find((l) => l.id === level)?.label.toLowerCase()} programs are on the way.</Text>
           </View>
         ) : (
-        <View style={styles.grid}>
-          {filteredWorkouts.map((w) => (
-            <TouchableOpacity
-              key={w.id}
-              style={styles.card}
-              activeOpacity={0.85}
-              onPress={() => openWorkout(w.id)}
-            >
-              <ImageBackground
-                source={typeof w.image === 'string' ? { uri: w.image } : w.image}
-                style={[styles.cardImage, w.imageHeight ? { height: w.imageHeight } : null]}
-                imageStyle={{ opacity: 0.4, resizeMode: 'cover' }}
-                resizeMode="cover"
+          <View style={styles.grid}>
+            {filteredWorkouts.map((w) => (
+              <TouchableOpacity
+                key={w.id}
+                style={styles.card}
+                activeOpacity={0.85}
+                onPress={() => openWorkout(w.id)}
               >
-                <View style={styles.cardTop}>
-                  <View style={{ gap: 4 }}>
-                    <View style={styles.pill}><Text style={styles.pillTextPrimary}>{w.athlete}</Text></View>
-                    <View style={styles.pill}><Text style={styles.pillText}>{w.tag}</Text></View>
+                <ImageBackground
+                  source={typeof w.image === 'string' ? { uri: w.image } : w.image}
+                  style={[styles.cardImage, w.imageHeight ? { height: w.imageHeight } : null]}
+                  imageStyle={{ resizeMode: 'cover' }}
+                  resizeMode="cover"
+                >
+                  <View style={styles.cardImageScrim} />
+                  <View style={styles.cardTop}>
+                    <View style={{ gap: 4 }}>
+                      <View style={styles.pill}><Text style={styles.pillTextPrimary}>{w.athlete}</Text></View>
+                      <View style={styles.pill}><Text style={styles.pillText}>{w.tag}</Text></View>
+                    </View>
                   </View>
-                  <View style={[styles.statusPill, w.premium ? styles.premiumPill : styles.freePill]}>
-                    {w.premium && <MaterialIcons name="star" size={12} color={colors.onPrimary} />}
-                    <Text style={w.premium ? styles.premiumText : styles.freeText}>{w.premium ? 'Premium' : 'Free'}</Text>
+                </ImageBackground>
+                <View style={styles.cardBottom}>
+                  <Text style={styles.cardTitle}>{w.title}</Text>
+                  <View style={styles.statsRow}>
+                    <View style={styles.statCol}>
+                      <Text style={styles.statLabel}>Exercises</Text>
+                      <Text style={styles.statNum}>{w.exercises}</Text>
+                    </View>
+                    <View style={[styles.statCol, styles.statColBorder]}>
+                      <Text style={styles.statLabel}>Total Sets</Text>
+                      <Text style={styles.statNum}>{w.sets}</Text>
+                    </View>
+                    <View style={[styles.statCol, styles.statColBorder]}>
+                      <Text style={styles.statLabel}>Duration</Text>
+                      <Text style={styles.statNum}>{w.duration}</Text>
+                    </View>
                   </View>
+                  <TouchableOpacity style={styles.startBtn} activeOpacity={0.85} onPress={() => openWorkout(w.id)}>
+                    <Text style={styles.startBtnText}>Start Workout</Text>
+                    <MaterialIcons name="arrow-forward" size={18} color={colors.onPrimary} />
+                  </TouchableOpacity>
                 </View>
-              </ImageBackground>
-              <View style={styles.cardBottom}>
-                <Text style={styles.cardTitle}>{w.title}</Text>
-                <View style={styles.statsRow}>
-                  <View style={styles.statCol}>
-                    <Text style={styles.statLabel}>Exercises</Text>
-                    <Text style={styles.statNum}>{w.exercises}</Text>
-                  </View>
-                  <View style={[styles.statCol, styles.statColBorder]}>
-                    <Text style={styles.statLabel}>Total Sets</Text>
-                    <Text style={styles.statNum}>{w.sets}</Text>
-                  </View>
-                  <View style={[styles.statCol, styles.statColBorder]}>
-                    <Text style={styles.statLabel}>Duration</Text>
-                    <Text style={styles.statNum}>{w.duration}</Text>
-                  </View>
-                </View>
-                <TouchableOpacity style={styles.startBtn} activeOpacity={0.85} onPress={() => openWorkout(w.id)}>
-                  <Text style={styles.startBtnText}>Start Workout</Text>
-                  <MaterialIcons name="arrow-forward" size={18} color={colors.onPrimary} />
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
+              </TouchableOpacity>
+            ))}
+          </View>
         )}
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ReturnType<typeof useThemeMode>['colors']) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: spacing.stackLg },
   pageHeader: { padding: spacing.marginMobile, gap: spacing.stackSm, backgroundColor: colors.surfaceDim, borderBottomWidth: 1, borderBottomColor: colors.surfaceContainerHigh },
@@ -420,15 +414,11 @@ const styles = StyleSheet.create({
   grid: { padding: spacing.marginMobile, gap: spacing.stackMd },
   card: { backgroundColor: colors.surfaceContainerLow, borderWidth: 1, borderColor: colors.surfaceContainerHighest, borderRadius: radius.md, overflow: 'hidden' },
   cardImage: { height: 140, padding: spacing.gutter },
+  cardImageScrim: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)' },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  pill: { borderWidth: 1, borderColor: colors.outlineVariant, borderRadius: radius.sm, backgroundColor: 'rgba(19,19,19,0.8)', paddingHorizontal: 8, paddingVertical: 4, alignSelf: 'flex-start' },
-  pillText: { ...typography.labelCaps, fontSize: 10, color: colors.onSurface },
-  pillTextPrimary: { ...typography.labelCaps, fontSize: 10, color: colors.primary },
-  statusPill: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: radius.sm, paddingHorizontal: 8, paddingVertical: 4 },
-  premiumPill: { backgroundColor: colors.primary },
-  freePill: { backgroundColor: colors.surfaceContainerHighest, borderWidth: 1, borderColor: colors.outlineVariant },
-  premiumText: { ...typography.labelCaps, fontSize: 10, color: colors.onPrimary },
-  freeText: { ...typography.labelCaps, fontSize: 10, color: colors.onSurface },
+  pill: { borderWidth: 1, borderColor: darkColors.outlineVariant, borderRadius: radius.sm, backgroundColor: 'rgba(19,19,19,0.8)', paddingHorizontal: 8, paddingVertical: 4, alignSelf: 'flex-start' },
+  pillText: { ...typography.labelCaps, fontSize: 10, color: darkColors.onSurface },
+  pillTextPrimary: { ...typography.labelCaps, fontSize: 10, color: darkColors.primary },
   cardBottom: { padding: spacing.gutter, gap: spacing.stackSm },
   cardTitle: { ...typography.headlineLgMobile, fontSize: 24, lineHeight: 30, color: colors.onSurface, textTransform: 'uppercase' },
   statsRow: { flexDirection: 'row', borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.surfaceContainerHigh, paddingVertical: 12 },
@@ -496,3 +486,4 @@ const styles = StyleSheet.create({
   },
   customCardHeaderText: { ...typography.labelCaps, fontSize: 11, color: colors.primary, flex: 1 },
 });
+

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -22,7 +22,8 @@ import IronHeader from '../components/IronHeader';
 import LoadingScreen from '../components/LoadingScreen';
 import ScrollFloat from '../components/ScrollFloat';
 import RevealOnScroll, { type RevealHandle } from '../components/RevealOnScroll';
-import { colors, typography, spacing, radius } from '../theme';
+import { darkColors, typography, spacing, radius } from '../theme';
+import { useThemeMode } from '../hooks/useThemeMode';
 import { PLATZ_SPLIT, PLATZ_NOTES, type PlatzExercise } from '../data/platzSplit';
 
 const WINDOW_HEIGHT = Dimensions.get('window').height;
@@ -38,11 +39,15 @@ function ExerciseRow({
   completed,
   onPress,
   onToggleComplete,
+  styles,
+  colors,
 }: {
   ex: PlatzExercise;
   completed: boolean;
   onPress: () => void;
   onToggleComplete: () => void;
+  styles: any;
+  colors: ReturnType<typeof useThemeMode>['colors'];
 }) {
   return (
     <TouchableOpacity
@@ -82,6 +87,8 @@ function DayCard({
   onPressExercise,
   completedExercises,
   onToggleComplete,
+  styles,
+  colors,
 }: {
   day: (typeof PLATZ_SPLIT)[number];
   expanded: boolean;
@@ -89,6 +96,8 @@ function DayCard({
   onPressExercise: (ex: PlatzExercise) => void;
   completedExercises: Set<string>;
   onToggleComplete: (name: string) => void;
+  styles: any;
+  colors: ReturnType<typeof useThemeMode>['colors'];
 }) {
   return (
     <View style={styles.dayCard}>
@@ -138,6 +147,8 @@ function DayCard({
                   completed={completedExercises.has(ex.name)}
                   onPress={() => onPressExercise(ex)}
                   onToggleComplete={() => onToggleComplete(ex.name)}
+                  styles={styles}
+                  colors={colors}
                 />
               ))}
               <TouchableOpacity style={styles.startBtn} onPress={() => onPressExercise(day.exercises[0])}>
@@ -154,6 +165,8 @@ function DayCard({
 
 export default function PlatzSplitScreen() {
   const navigation = useNavigation<any>();
+  const { colors } = useThemeMode();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
@@ -287,6 +300,8 @@ export default function PlatzSplitScreen() {
                     onToggle={() => toggleDay(day.id)}
                     completedExercises={completedExercises}
                     onToggleComplete={toggleCompleted}
+                    styles={styles}
+                    colors={colors}
                     onPressExercise={(ex) =>
                       navigation.navigate('WorkoutExecution', {
                         name: ex.name,
@@ -320,16 +335,16 @@ export default function PlatzSplitScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ReturnType<typeof useThemeMode>['colors']) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: spacing.stackLg },
 
   hero: { width: '100%', height: 260, justifyContent: 'flex-end', margin: spacing.marginMobile, marginBottom: 0, borderWidth: 1, borderColor: colors.secondaryContainer, borderRadius: radius.md, overflow: 'hidden' },
   heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)' },
   heroContent: { padding: 20, gap: 4 },
-  heroKicker: { ...typography.labelCaps, color: colors.primary, letterSpacing: 3 },
-  heroTitle: { ...typography.displayXl, fontSize: 32, lineHeight: 38, color: colors.onSurface, textTransform: 'uppercase' },
-  heroSub: { ...typography.bodyMd, color: colors.onSurfaceVariant },
+  heroKicker: { ...typography.labelCaps, color: darkColors.primary, letterSpacing: 3 },
+  heroTitle: { ...typography.displayXl, fontSize: 32, lineHeight: 38, color: darkColors.onSurface, textTransform: 'uppercase' },
+  heroSub: { ...typography.bodyMd, color: darkColors.onSurfaceVariant },
 
   structureRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: spacing.marginMobile, paddingTop: spacing.stackMd },
   structureChip: { borderWidth: 1, borderColor: colors.secondaryContainer, borderRadius: radius.sm, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: colors.surfaceContainerLow },

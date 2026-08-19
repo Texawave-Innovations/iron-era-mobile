@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import ScrollFloat from './ScrollFloat';
-import { colors, typography, spacing, radius } from '../theme';
+import { typography, spacing, radius } from '../theme';
+import { useThemeMode } from '../hooks/useThemeMode';
 
 type Props = {
   title?: string;
@@ -14,14 +15,15 @@ type Props = {
 };
 
 const MENU_ITEMS = [
-  { key: 'Profile', label: 'Profile', icon: 'person' as const },
   { key: 'Settings', label: 'Settings', icon: 'settings' as const },
 ];
 
-export default function IronHeader({ title = 'IRON ERA', onMenuPress, showBack, onBackPress }: Props) {
+export default function IronHeader({ title = 'GYMCOM', onMenuPress, showBack, onBackPress }: Props) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { colors } = useThemeMode();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const handleMenuPress = () => {
     if (onMenuPress) {
@@ -38,7 +40,6 @@ export default function IronHeader({ title = 'IRON ERA', onMenuPress, showBack, 
       </TouchableOpacity>
       <Text style={styles.title} numberOfLines={1}>{title}</Text>
       <TouchableOpacity hitSlop={10}>
-        <Text style={styles.iron}>IRON+</Text>
       </TouchableOpacity>
 
       <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
@@ -65,7 +66,7 @@ export default function IronHeader({ title = 'IRON ERA', onMenuPress, showBack, 
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ReturnType<typeof useThemeMode>['colors']) => StyleSheet.create({
   header: {
     borderBottomWidth: 1,
     borderBottomColor: colors.outlineVariant,

@@ -1,13 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors, typography, spacing } from '../theme';
+import { typography, spacing } from '../theme';
+import { useThemeMode } from '../hooks/useThemeMode';
 
 type Props = {
   label?: string;
 };
 
 export default function LoadingScreen({ label = 'LOADING…' }: Props) {
+  const { colors } = useThemeMode();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const spin = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(0.4)).current;
 
@@ -41,7 +44,7 @@ export default function LoadingScreen({ label = 'LOADING…' }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ReturnType<typeof useThemeMode>['colors']) => StyleSheet.create({
   loadingScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.stackMd },
   loadingText: { ...typography.labelCaps, letterSpacing: 3, color: colors.onSurfaceVariant },
 });
